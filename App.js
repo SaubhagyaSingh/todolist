@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { ImageBackground } from "react-native";
+
 import {
   KeyboardAvoidingView,
   StyleSheet,
@@ -44,7 +46,7 @@ export default function App() {
     Keyboard.dismiss();
     if (task.trim() !== "") {
       setTaskItems([...taskItems, task]);
-      setTask(""); 
+      setTask("");
     }
   };
 
@@ -65,43 +67,48 @@ export default function App() {
   }, [taskItems]);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.main}>
-        <Text style={styles.heading}>My Tasks</Text>
-      </View>
-      <ScrollView style={styles.tasks}>
-        {taskItems.map((item, index) => (
-          <TouchableOpacity key={index} onPress={() => completeTask(index)}>
-            {/* Pass onEdit callback to Task component */}
-            <Task text={item} index={index} onEdit={editTask} />
+    <ImageBackground
+      source={require("./assets/bg1.jpg")}
+      style={styles.bg}
+      resizeMode="cover"
+    >
+      <View style={styles.container}>
+        <View style={styles.main}>
+          <Text style={styles.heading}>My Tasks</Text>
+        </View>
+        <ScrollView style={styles.tasks}>
+          {taskItems.map((item, index) => (
+            <TouchableOpacity key={index} onPress={() => completeTask(index)}>
+              {/* Pass onEdit callback to Task component */}
+              <Task text={item} index={index} onEdit={editTask} />
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.writeTaskWrapper}
+        >
+          <TextInput
+            style={styles.input}
+            placeholder={"Add another Task"}
+            value={task}
+            onChangeText={(text) => setTask(text)}
+          />
+          <TouchableOpacity onPress={handleAddTask}>
+            <View style={styles.button}>
+              <Text style={styles.addText}>+</Text>
+            </View>
           </TouchableOpacity>
-        ))}
-      </ScrollView>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.writeTaskWrapper}
-      >
-        <TextInput
-          style={styles.input}
-          placeholder={"Add another Task"}
-          value={task}
-          onChangeText={(text) => setTask(text)}
-        />
-        <TouchableOpacity onPress={handleAddTask}>
-          <View style={styles.button}>
-            <Text style={styles.addText}>+</Text>
-          </View>
-        </TouchableOpacity>
-      </KeyboardAvoidingView>
-      <StatusBar style="auto" />
-    </View>
+        </KeyboardAvoidingView>
+        <StatusBar style="auto" />
+      </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#B1E4DB",
   },
   main: {
     paddingTop: 100,
@@ -112,7 +119,7 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 40,
     fontWeight: "bold",
-    color: "black",
+    color: "#fff",
   },
   tasks: {
     flex: 1,
@@ -120,24 +127,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   writeTaskWrapper: {
+    flex: 1,
     height: 60,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-around",
     position: "absolute",
-    bottom: 0,
     width: "100%",
     backgroundColor: "#fff",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingHorizontal: 20,
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    marginVertical: 700,
   },
   input: {
     flex: 1,
     height: 50,
     backgroundColor: "#fff",
     borderRadius: 25,
-    paddingHorizontal: 15,
+    paddingHorizontal: 0,
+    marginLeft: 0,
   },
   button: {
     width: 50,
@@ -146,6 +154,10 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     justifyContent: "center",
     alignItems: "center",
+  },
+  bg: {
+    flex: 1,
+    backgroundColor: "rgba(255, 255, 255, 0.7)",
   },
   addText: {
     fontSize: 24,
