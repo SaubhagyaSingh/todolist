@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   KeyboardAvoidingView,
   StyleSheet,
@@ -8,21 +8,50 @@ import {
   TouchableOpacity,
   Keyboard,
   Platform,
-  AsyncStorage,
+  ScrollView,
 } from "react-native";
-import { StatusBar } from "expo-status-bar"; // Make sure you have the correct import for StatusBar.
+import { StatusBar } from "expo-status-bar";
 import Task from "./components/Task";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function App() {
   const [task, setTask] = useState("");
   const [taskItems, setTaskItems] = useState([]);
 
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      const storedTask = await AsyncStorage.getItem("task");
+      const parsedTask = JSON.parse(storedTask) || [];
+      setTaskItems(parsedTask);
+    } catch (error) {
+      console.error("Error loading data:", error);
+    }
+  };
+
+  const saveData = async () => {
+    try {
+      await AsyncStorage.setItem("task", JSON.stringify(taskItems));
+    } catch (error) {
+      console.error("Error saving data:", error);
+    }
+  };
+
   const handleAddTask = () => {
     Keyboard.dismiss();
     if (task.trim() !== "") {
       setTaskItems([...taskItems, task]);
-      setTask(""); // Clear the input field
+      setTask(""); 
     }
+  };
+
+  const editTask = (index, newText) => {
+    let itemsCopy = [...taskItems];
+    itemsCopy[index] = newText;
+    setTaskItems(itemsCopy);
   };
 
   const completeTask = (index) => {
@@ -31,18 +60,23 @@ export default function App() {
     setTaskItems(itemsCopy);
   };
 
+  useEffect(() => {
+    saveData();
+  }, [taskItems]);
+
   return (
     <View style={styles.container}>
       <View style={styles.main}>
         <Text style={styles.heading}>My Tasks</Text>
       </View>
-      <View style={styles.tasks}>
+      <ScrollView style={styles.tasks}>
         {taskItems.map((item, index) => (
           <TouchableOpacity key={index} onPress={() => completeTask(index)}>
-            <Task text={item} />
+            {/* Pass onEdit callback to Task component */}
+            <Task text={item} index={index} onEdit={editTask} />
           </TouchableOpacity>
         ))}
-      </View>
+      </ScrollView>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.writeTaskWrapper}
@@ -71,46 +105,50 @@ const styles = StyleSheet.create({
   },
   main: {
     paddingTop: 100,
-    paddingHorizontal: 94,
+    paddingHorizontal: 20,
     justifyContent: "center",
+    alignItems: "center",
   },
   heading: {
     fontSize: 40,
     fontWeight: "bold",
+    color: "black",
   },
   tasks: {
+    flex: 1,
     paddingTop: 20,
     paddingHorizontal: 20,
   },
   writeTaskWrapper: {
     height: 60,
-    position: "absolute",
-    bottom: 80,
-    width: "100%",
-    justifyContent: "space-around",
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-around",
+    position: "absolute",
+    bottom: 0,
+    width: "100%",
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingHorizontal: 20,
   },
   input: {
+    flex: 1,
+    height: 50,
     backgroundColor: "#fff",
-    padding: 15,
-    width: 250,
-    borderRadius: 40,
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#000000",
+    borderRadius: 25,
+    paddingHorizontal: 15,
   },
   button: {
     width: 50,
     height: 50,
     backgroundColor: "#fff",
-    borderRadius: 50,
-    borderColor: "#B1E4DB",
+    borderRadius: 25,
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#000000",
   },
-  addText: {},
+  addText: {
+    fontSize: 24,
+    fontWeight: "bold",
+  },
 });
